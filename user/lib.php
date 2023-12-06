@@ -827,8 +827,8 @@ function user_get_user_navigation_info($user, $page, $options = array()) {
     }
 
     $course = $page->course;
-
-    // Query the environment.
+  
+      // Query the environment.
     $context = context_course::instance($course->id);
 
     // Get basic user metadata.
@@ -873,17 +873,35 @@ function user_get_user_navigation_info($user, $page, $options = array()) {
 
     $returnobject->metadata['asotherrole'] = false;
 
+    // My try to change userMenuItem**********************
+    $id = optional_param('id', 0, PARAM_INT);
+    // $PAGE->set_url('/course/view.php', $id);
+    // $PAGE->pagetype == 'course-view' && $PAGE->url->compare('/course/view.php')
+    // global $PAGE;
+    // $PAGE->pagetype == 'course-view' && $PAGE->url->compare('/view.php')
+    if ($course = $page->course){        
+        
+        $oldcoursecustomusermenuitems = str_replace(["\r\n", "\r"], "\n", $CFG->customusermenuitems);
+        if ($oldcoursecustomusermenuitems) {
+            $newcoursecustomusermenuitems = 'profile,moodle|/user/profile.php
+            grades,grades|/grade/report/grader/index.php?id=' . $id .
+            'calendar,core_calendar|/calendar/view.php?view=month
+            privatefiles,moodle|/user/files.php';
+        }
+        set_config('customusermenuitems', $newcoursecustomusermenuitems);
+    }
+// ****************************************
     // Before we add the last items (usually a logout + switch role link), add any
     // custom-defined items.
     $customitems = user_convert_text_to_menu_items($CFG->customusermenuitems, $page);
     $custommenucount = 0;
     foreach ($customitems as $item) {
         $returnobject->navitems[] = $item;
-        if ($item->itemtype !== 'divider' && $item->itemtype !== 'invalid') {
-            $custommenucount++;
+        if ($item->itemtype !== 'divider' && $item->itemtype !== 'invalid'){
+            $custommenucount++;          
         }
     }
-
+    
     if ($custommenucount > 0) {
         // Only add a divider if we have customusermenuitems.
         $divider = new stdClass();
